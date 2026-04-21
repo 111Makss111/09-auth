@@ -18,12 +18,10 @@ export default function SidebarNotes() {
       params.set('search', search);
     }
 
-    if (tag !== 'All') {
-      params.set('tag', tag);
-    }
-
+    const basePath =
+      tag === 'All' ? '/notes' : `/notes/filter/${encodeURIComponent(tag)}`;
     const query = params.toString();
-    return query ? `/notes?${query}` : '/notes';
+    return query ? `${basePath}?${query}` : basePath;
   };
 
   return (

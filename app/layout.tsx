@@ -19,9 +19,13 @@ export const metadata: Metadata = {
 
 type RootLayoutProps = Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>;
 
-export default async function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({
+  children,
+  modal,
+}: RootLayoutProps) {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
   let initialUser: User | null = null;
@@ -46,6 +50,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <Header />
             {children}
             <Footer />
+            {modal}
           </AuthProvider>
         </TanStackProvider>
       </body>

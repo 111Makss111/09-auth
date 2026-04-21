@@ -4,6 +4,7 @@ import css from './Pagination.module.css';
 type PaginationProps = {
   currentPage: number;
   totalPages: number;
+  basePath?: string;
   search?: string;
   tag?: string;
 };
@@ -11,6 +12,7 @@ type PaginationProps = {
 export default function Pagination({
   currentPage,
   totalPages,
+  basePath = '/notes',
   search = '',
   tag = '',
 }: PaginationProps) {
@@ -36,7 +38,7 @@ export default function Pagination({
     }
 
     const query = params.toString();
-    return query ? `/notes?${query}` : '/notes';
+    return query ? `${basePath}?${query}` : basePath;
   };
 
   return (

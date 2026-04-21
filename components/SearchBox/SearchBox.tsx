@@ -1,10 +1,11 @@
 'use client';
 
 import { FormEvent } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import css from './SearchBox.module.css';
 
 export default function SearchBox() {
+  const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -24,7 +25,7 @@ export default function SearchBox() {
     params.delete('page');
 
     const query = params.toString();
-    router.push(query ? `/notes?${query}` : '/notes');
+    router.push(query ? `${pathname}?${query}` : pathname);
   };
 
   return (

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const PRIVATE_ROUTES = ['/profile', '/notes'];
-const PUBLIC_ROUTES = ['/', '/sign-in', '/sign-up'];
+const AUTH_ROUTES = ['/sign-in', '/sign-up'];
 
 const matchesRoute = (pathname: string, routes: string[]) =>
   routes.some(
@@ -19,7 +19,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
-  if (isAuthenticated && matchesRoute(pathname, PUBLIC_ROUTES)) {
+  if (isAuthenticated && matchesRoute(pathname, AUTH_ROUTES)) {
     return NextResponse.redirect(new URL('/profile', request.url));
   }
 

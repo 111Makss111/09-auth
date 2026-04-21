@@ -2,8 +2,8 @@
 
 import { useEffect, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { checkSession, getMe } from '@/lib/api/clientApi';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { checkSession, getMe, logout } from '@/lib/api/clientApi';
 import { useAuthStore } from '@/lib/store/authStore';
 import type { User } from '@/types/user';
 import Loader from '@/components/Loader/Loader';
@@ -30,6 +30,16 @@ export default function AuthProvider({
   const { setUser, clearIsAuthenticated } = useAuthStore();
 
   const requiresAuth = isPrivatePath(pathname);
+
+  const logoutMutation = useMutation({
+    mutationFn: logout,
+    onSettled: () => {
+      clearIsAuthenticated();
+      queryClient.removeQueries({ queryKey: ['auth'] });
+      router.replace('/sign-in');
+      router.refresh();
+    },
+  });
 
   useEffect(() => {
     if (initialUser) {
@@ -70,17 +80,15 @@ export default function AuthProvider({
       return;
     }
 
-    clearIsAuthenticated();
-    queryClient.removeQueries({ queryKey: ['auth'] });
-    router.replace('/sign-in');
-    router.refresh();
+    if (!logoutMutation.isPending) {
+      logoutMutation.mutate();
+    }
   }, [
-    clearIsAuthenticated,
-    queryClient,
+    logoutMutation,
     requiresAuth,
-    router,
     sessionQuery.data,
     sessionQuery.isSuccess,
+    queryClient,
     setUser,
   ]);
 
@@ -89,19 +97,17 @@ export default function AuthProvider({
       return;
     }
 
-    clearIsAuthenticated();
-    queryClient.removeQueries({ queryKey: ['auth'] });
-    router.replace('/sign-in');
-    router.refresh();
-  }, [
-    clearIsAuthenticated,
-    queryClient,
-    requiresAuth,
-    router,
-    sessionQuery.isError,
-  ]);
+    if (!logoutMutation.isPending) {
+      logoutMutation.mutate();
+    }
+  }, [logoutMutation, requiresAuth, sessionQuery.isError]);
 
-  if (requiresAuth && (sessionQuery.isPending || sessionQuery.isFetching)) {
+  if (
+    requiresAuth &&
+    (sessionQuery.isPending ||
+      sessionQuery.isFetching ||
+      logoutMutation.isPending)
+  ) {
     return <Loader />;
   }
 

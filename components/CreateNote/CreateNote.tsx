@@ -1,53 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
-import { createNote, type CreateNotePayload } from '@/lib/api/clientApi';
-import Modal from '@/components/Modal/Modal';
-import NoteForm from '@/components/NoteForm/NoteForm';
+import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import css from './CreateNote.module.css';
 
 export default function CreateNote() {
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-
-  const createNoteMutation = useMutation({
-    mutationFn: createNote,
-    onSuccess: () => {
-      setIsOpen(false);
-      router.refresh();
-    },
-  });
-
-  const handleSubmit = async (payload: CreateNotePayload) => {
-    await createNoteMutation.mutateAsync(payload);
-  };
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentQuery = searchParams.toString();
+  const from = currentQuery ? `${pathname}?${currentQuery}` : pathname;
 
   return (
-    <>
-      <button
-        type="button"
-        className={css.button}
-        onClick={() => setIsOpen(true)}
-      >
-        Create note
-      </button>
-
-      {isOpen ? (
-        <Modal onClose={() => setIsOpen(false)}>
-          <NoteForm
-            onSubmit={handleSubmit}
-            onCancel={() => setIsOpen(false)}
-            isPending={createNoteMutation.isPending}
-            errorMessage={
-              createNoteMutation.error instanceof Error
-                ? createNoteMutation.error.message
-                : ''
-            }
-          />
-        </Modal>
-      ) : null}
-    </>
+    <Link
+      href={`/notes/action/create?from=${encodeURIComponent(from)}`}
+      prefetch={false}
+      className={css.button}
+    >
+      Create note
+    </Link>
   );
 }
