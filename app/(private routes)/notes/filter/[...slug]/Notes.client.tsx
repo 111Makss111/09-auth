@@ -121,13 +121,19 @@ export default function NotesClient({
         </Link>
       </div>
 
-      <NoteList notes={notesQuery.data.notes} />
+      {notesQuery.data.notes.length > 0 ? (
+        <>
+          <NoteList notes={notesQuery.data.notes} />
 
-      <Pagination
-        currentPage={notesQuery.data.page}
-        totalPages={notesQuery.data.totalPages}
-        onPageChange={setCurrentPage}
-      />
+          <Pagination
+            currentPage={notesQuery.data.page}
+            totalPages={notesQuery.data.totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </>
+      ) : (
+        <p>No notes found.</p>
+      )}
     </main>
   );
 }

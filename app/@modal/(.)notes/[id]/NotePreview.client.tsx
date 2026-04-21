@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
+import Modal from '@/components/Modal/Modal';
 import NotePreview from '@/components/NotePreview/NotePreview';
 import Loader from '@/components/Loader/Loader';
 import { fetchNoteById } from '@/lib/api/clientApi';
@@ -44,5 +45,9 @@ export default function NotePreviewClient({ id }: NotePreviewClientProps) {
     return <p>Unable to load the note preview.</p>;
   }
 
-  return <NotePreview note={noteQuery.data} onClose={() => router.back()} />;
+  return (
+    <Modal onClose={() => router.back()}>
+      <NotePreview note={noteQuery.data} onClose={() => router.back()} />
+    </Modal>
+  );
 }
