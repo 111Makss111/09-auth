@@ -1,12 +1,8 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import css from './page.module.css';
-import SearchBox from '@/components/SearchBox/SearchBox';
-import CreateNote from '@/components/CreateNote/CreateNote';
-import NoteList from '@/components/NoteList/NoteList';
-import Pagination from '@/components/Pagination/Pagination';
 import { fetchNotes } from '@/lib/api/serverApi';
 import type { NotesResponse } from '@/types/note';
+import NotesClient from './filter/[...slug]/Notes.client';
 
 type NotesPageProps = {
   searchParams: Promise<{
@@ -33,21 +29,13 @@ export default async function NotesPage({ searchParams }: NotesPageProps) {
   }
 
   return (
-    <main className={css.app}>
-      <div className={css.toolbar}>
-        <SearchBox />
-        <CreateNote />
-      </div>
-
-      <NoteList notes={notesResponse.notes} />
-
-      <Pagination
-        currentPage={notesResponse.page}
-        totalPages={notesResponse.totalPages}
-        basePath="/notes"
-        search={search}
-        tag={tag}
-      />
-    </main>
+    <NotesClient
+      notes={notesResponse.notes}
+      currentPage={notesResponse.page}
+      totalPages={notesResponse.totalPages}
+      basePath="/notes"
+      search={search}
+      tag={tag}
+    />
   );
 }

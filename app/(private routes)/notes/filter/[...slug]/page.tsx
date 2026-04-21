@@ -1,12 +1,8 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import css from '../../page.module.css';
-import SearchBox from '@/components/SearchBox/SearchBox';
-import CreateNote from '@/components/CreateNote/CreateNote';
-import NoteList from '@/components/NoteList/NoteList';
-import Pagination from '@/components/Pagination/Pagination';
 import { fetchNotes } from '@/lib/api/serverApi';
 import type { NotesResponse } from '@/types/note';
+import NotesClient from './Notes.client';
 
 type FilteredNotesPageProps = {
   params: Promise<{ slug: string[] }>;
@@ -43,20 +39,12 @@ export default async function FilteredNotesPage({
   const basePath = `/notes/filter/${slug.map(encodeURIComponent).join('/')}`;
 
   return (
-    <main className={css.app}>
-      <div className={css.toolbar}>
-        <SearchBox />
-        <CreateNote />
-      </div>
-
-      <NoteList notes={notesResponse.notes} />
-
-      <Pagination
-        currentPage={notesResponse.page}
-        totalPages={notesResponse.totalPages}
-        basePath={basePath}
-        search={search}
-      />
-    </main>
+    <NotesClient
+      notes={notesResponse.notes}
+      currentPage={notesResponse.page}
+      totalPages={notesResponse.totalPages}
+      basePath={basePath}
+      search={search}
+    />
   );
 }

@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
-import NoteDetails from '@/components/NoteDetails/NoteDetails';
 import { fetchNoteById } from '@/lib/api/serverApi';
 import type { Note } from '@/types/note';
+import NoteDetailsClient from './NoteDetails.client';
 
 type NoteDetailsPageProps = {
   params: Promise<{ id: string }>;
@@ -25,5 +25,5 @@ export default async function NoteDetailsPage({
     notFound();
   }
 
-  return <NoteDetails note={note} backHref={backHref} />;
+  return <NoteDetailsClient note={note} backHref={backHref} />;
 }

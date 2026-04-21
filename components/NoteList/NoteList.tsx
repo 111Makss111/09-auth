@@ -1,9 +1,11 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { deleteNote } from '@/lib/api/clientApi';
+import { useNoteStore } from '@/lib/store/noteStore';
 import type { Note } from '@/types/note';
 import css from './NoteList.module.css';
 
@@ -15,13 +17,20 @@ export default function NoteList({ notes }: NoteListProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const setNotes = useNoteStore((state) => state.setNotes);
+  const removeNote = useNoteStore((state) => state.removeNote);
 
   const currentQuery = searchParams.toString();
   const from = currentQuery ? `${pathname}?${currentQuery}` : pathname;
 
+  useEffect(() => {
+    setNotes(notes);
+  }, [notes, setNotes]);
+
   const deleteMutation = useMutation({
     mutationFn: deleteNote,
-    onSuccess: () => {
+    onSuccess: (_deletedNote, deletedId) => {
+      removeNote(deletedId);
       router.refresh();
     },
   });

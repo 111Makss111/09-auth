@@ -1,9 +1,9 @@
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Modal from '@/components/Modal/Modal';
-import NotePreview from '@/components/NotePreview/NotePreview';
 import { fetchNoteById } from '@/lib/api/serverApi';
 import type { Note } from '@/types/note';
+import NotePreviewClient from './NotePreview.client';
 
 type NotePreviewModalPageProps = {
   params: Promise<{ id: string }>;
@@ -28,7 +28,7 @@ export default async function NotePreviewModalPage({
 
   return (
     <Modal closeHref={backHref}>
-      <NotePreview note={note} backHref={backHref} />
+      <NotePreviewClient note={note} backHref={backHref} />
     </Modal>
   );
 }
