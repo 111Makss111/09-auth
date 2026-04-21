@@ -2,9 +2,10 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteNote } from '@/lib/api/clientApi';
+import { notesQueryKeys } from '@/lib/query';
 import { useNoteStore } from '@/lib/store/noteStore';
 import type { Note } from '@/types/note';
 import css from './NoteList.module.css';
@@ -15,10 +16,9 @@ type NoteListProps = {
 
 export default function NoteList({ notes }: NoteListProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const setNotes = useNoteStore((state) => state.setNotes);
-  const removeNote = useNoteStore((state) => state.removeNote);
 
   const currentQuery = searchParams.toString();
   const from = currentQuery ? `${pathname}?${currentQuery}` : pathname;
@@ -29,9 +29,13 @@ export default function NoteList({ notes }: NoteListProps) {
 
   const deleteMutation = useMutation({
     mutationFn: deleteNote,
-    onSuccess: (_deletedNote, deletedId) => {
-      removeNote(deletedId);
-      router.refresh();
+    onSuccess: async (_deletedNote, deletedId) => {
+      await queryClient.invalidateQueries({
+        queryKey: notesQueryKeys.lists(),
+      });
+      queryClient.removeQueries({
+        queryKey: notesQueryKeys.detail(deletedId),
+      });
     },
   });
 

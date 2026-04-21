@@ -1,34 +1,34 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import css from './NoteForm.module.css';
 import { NOTE_TAGS } from '@/types/note';
 import type { CreateNotePayload } from '@/lib/api/clientApi';
+import { useNoteStore } from '@/lib/store/noteStore';
 
 type NoteFormProps = {
   onSubmit: (payload: CreateNotePayload) => Promise<void> | void;
-  onCancel: () => void;
   isPending?: boolean;
   errorMessage?: string;
 };
 
 export default function NoteForm({
   onSubmit,
-  onCancel,
   isPending = false,
   errorMessage = '',
 }: NoteFormProps) {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [tag, setTag] = useState<(typeof NOTE_TAGS)[number]>('Todo');
+  const router = useRouter();
+  const draft = useNoteStore((state) => state.draft);
+  const updateDraft = useNoteStore((state) => state.updateDraft);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     await onSubmit({
-      title: title.trim(),
-      content: content.trim(),
-      tag,
+      title: draft.title.trim(),
+      content: draft.content.trim(),
+      tag: draft.tag,
     });
   };
 
@@ -40,8 +40,8 @@ export default function NoteForm({
           id="title"
           type="text"
           className={css.input}
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
+          value={draft.title}
+          onChange={(event) => updateDraft({ title: event.target.value })}
           required
         />
       </div>
@@ -52,8 +52,8 @@ export default function NoteForm({
           id="content"
           className={css.textarea}
           rows={6}
-          value={content}
-          onChange={(event) => setContent(event.target.value)}
+          value={draft.content}
+          onChange={(event) => updateDraft({ content: event.target.value })}
           required
         />
       </div>
@@ -63,9 +63,11 @@ export default function NoteForm({
         <select
           id="tag"
           className={css.select}
-          value={tag}
+          value={draft.tag}
           onChange={(event) =>
-            setTag(event.target.value as (typeof NOTE_TAGS)[number])
+            updateDraft({
+              tag: event.target.value as (typeof NOTE_TAGS)[number],
+            })
           }
         >
           {NOTE_TAGS.map((tagOption) => (
@@ -79,7 +81,11 @@ export default function NoteForm({
       {errorMessage ? <p className={css.error}>{errorMessage}</p> : null}
 
       <div className={css.actions}>
-        <button type="button" className={css.cancelButton} onClick={onCancel}>
+        <button
+          type="button"
+          className={css.cancelButton}
+          onClick={() => router.back()}
+        >
           Cancel
         </button>
         <button type="submit" className={css.submitButton} disabled={isPending}>

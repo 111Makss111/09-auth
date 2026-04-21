@@ -6,6 +6,7 @@ import Footer from '@/components/Footer/Footer';
 import TanStackProvider from '@/components/TanStackProvider/TanStackProvider';
 import AuthProvider from '@/components/AuthProvider/AuthProvider';
 import { checkSession, getMe } from '@/lib/api/serverApi';
+import { mergeCookieHeader } from '@/lib/sessionCookies';
 import type { User } from '@/types/user';
 
 export const metadata: Metadata = {
@@ -32,10 +33,16 @@ export default async function RootLayout({
 
   if (cookieHeader) {
     try {
-      const hasSession = await checkSession(cookieHeader);
+      const sessionResponse = await checkSession(cookieHeader);
+      const hasSession = Boolean(sessionResponse.data?.success);
 
       if (hasSession) {
-        initialUser = await getMe(cookieHeader);
+        const nextCookieHeader = mergeCookieHeader(
+          cookieHeader,
+          sessionResponse.headers['set-cookie'],
+        );
+
+        initialUser = await getMe(nextCookieHeader || cookieHeader);
       }
     } catch {
       initialUser = null;

@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
+import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
 import { fetchNoteById } from '@/lib/api/serverApi';
-import type { Note } from '@/types/note';
+import { createQueryClient, notesQueryKeys } from '@/lib/query';
 import NoteDetailsClient from './NoteDetails.client';
 
 type NoteDetailsPageProps = {
@@ -17,13 +18,20 @@ export default async function NoteDetailsPage({
   const { from } = await searchParams;
   const cookieHeader = (await cookies()).toString();
   const backHref = from ? decodeURIComponent(from) : '/notes';
-  let note: Note;
+  const queryClient = createQueryClient();
 
   try {
-    note = await fetchNoteById(id, cookieHeader);
+    await queryClient.prefetchQuery({
+      queryKey: notesQueryKeys.detail(id),
+      queryFn: () => fetchNoteById(id, cookieHeader),
+    });
   } catch {
     notFound();
   }
 
-  return <NoteDetailsClient note={note} backHref={backHref} />;
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <NoteDetailsClient id={id} backHref={backHref} />
+    </HydrationBoundary>
+  );
 }

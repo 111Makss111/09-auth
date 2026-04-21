@@ -6,15 +6,13 @@ import { logErrorResponse } from '../../_utils/utils';
 
 export async function POST() {
   const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
 
   try {
-    const accessToken = cookieStore.get('accessToken')?.value;
-    const refreshToken = cookieStore.get('refreshToken')?.value;
-
-    if (accessToken || refreshToken) {
-      await api.post('auth/logout', null, {
+    if (cookieHeader) {
+      await api.post('/auth/logout', null, {
         headers: {
-          Cookie: `accessToken=${accessToken}; refreshToken=${refreshToken}`,
+          Cookie: cookieHeader,
         },
       });
     }

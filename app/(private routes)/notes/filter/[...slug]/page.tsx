@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
 import { fetchNotes } from '@/lib/api/serverApi';
-import type { NotesResponse } from '@/types/note';
+import { createQueryClient, notesQueryKeys } from '@/lib/query';
 import NotesClient from './Notes.client';
 
 type FilteredNotesPageProps = {
@@ -24,27 +25,29 @@ export default async function FilteredNotesPage({
   const page = Number(queryParams.page ?? 1) || 1;
   const tag = decodeURIComponent(slug.at(-1) ?? '');
   const cookieHeader = (await cookies()).toString();
-  let notesResponse: NotesResponse;
+  const queryClient = createQueryClient();
 
   if (!tag || tag === 'All') {
     redirect('/notes');
   }
 
   try {
-    notesResponse = await fetchNotes({ search, page, tag }, cookieHeader);
+    await queryClient.prefetchQuery({
+      queryKey: notesQueryKeys.list({ search, page, tag }),
+      queryFn: () => fetchNotes({ search, page, tag }, cookieHeader),
+    });
   } catch {
     redirect('/sign-in');
   }
 
-  const basePath = `/notes/filter/${slug.map(encodeURIComponent).join('/')}`;
-
   return (
-    <NotesClient
-      notes={notesResponse.notes}
-      currentPage={notesResponse.page}
-      totalPages={notesResponse.totalPages}
-      basePath={basePath}
-      search={search}
-    />
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <NotesClient
+        key={`notes:${tag}:${search}:${page}`}
+        initialPage={page}
+        initialSearch={search}
+        initialTag={tag}
+      />
+    </HydrationBoundary>
   );
 }

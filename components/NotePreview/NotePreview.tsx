@@ -1,10 +1,9 @@
-import Link from 'next/link';
 import css from './NotePreview.module.css';
 import type { Note } from '@/types/note';
 
 type NotePreviewProps = {
   note: Note;
-  backHref: string;
+  onClose: () => void;
 };
 
 const formatDate = (dateValue: string) => {
@@ -18,13 +17,13 @@ const formatDate = (dateValue: string) => {
   }).format(new Date(dateValue));
 };
 
-export default function NotePreview({ note, backHref }: NotePreviewProps) {
+export default function NotePreview({ note, onClose }: NotePreviewProps) {
   return (
     <div className={css.container}>
       <div className={css.item}>
-        <Link href={backHref} prefetch={false} className={css.backBtn}>
-          Back
-        </Link>
+        <button type="button" className={css.backBtn} onClick={onClose}>
+          Close
+        </button>
 
         <div className={css.header}>
           <h2>{note.title}</h2>

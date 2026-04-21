@@ -4,6 +4,7 @@ import css from './Pagination.module.css';
 type PaginationProps = {
   currentPage: number;
   totalPages: number;
+  onPageChange?: (page: number) => void;
   basePath?: string;
   search?: string;
   tag?: string;
@@ -12,6 +13,7 @@ type PaginationProps = {
 export default function Pagination({
   currentPage,
   totalPages,
+  onPageChange,
   basePath = '/notes',
   search = '',
   tag = '',
@@ -21,6 +23,27 @@ export default function Pagination({
   }
 
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  if (onPageChange) {
+    return (
+      <ul className={css.pagination}>
+        {pages.map((page) => (
+          <li
+            key={page}
+            className={page === currentPage ? css.active : undefined}
+          >
+            <button
+              type="button"
+              className={css.pageButton}
+              onClick={() => onPageChange(page)}
+            >
+              {page}
+            </button>
+          </li>
+        ))}
+      </ul>
+    );
+  }
 
   const buildHref = (page: number) => {
     const params = new URLSearchParams();

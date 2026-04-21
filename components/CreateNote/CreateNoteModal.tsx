@@ -1,8 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createNote, type CreateNotePayload } from '@/lib/api/clientApi';
+import { notesQueryKeys } from '@/lib/query';
+import { useNoteStore } from '@/lib/store/noteStore';
 import Modal from '@/components/Modal/Modal';
 import NoteForm from '@/components/NoteForm/NoteForm';
 
@@ -14,12 +16,15 @@ export default function CreateNoteModal({
   closeHref,
 }: CreateNoteModalProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const resetDraft = useNoteStore((state) => state.resetDraft);
 
   const createNoteMutation = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: notesQueryKeys.lists() });
+      resetDraft();
       router.push(closeHref);
-      router.refresh();
     },
   });
 
@@ -31,7 +36,6 @@ export default function CreateNoteModal({
     <Modal closeHref={closeHref}>
       <NoteForm
         onSubmit={handleSubmit}
-        onCancel={() => router.push(closeHref)}
         isPending={createNoteMutation.isPending}
         errorMessage={
           createNoteMutation.error instanceof Error
